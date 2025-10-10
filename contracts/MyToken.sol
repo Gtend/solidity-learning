@@ -18,6 +18,9 @@ pragma solidity ^0.8.28;
 
 // CLASS = CONTRACT
 contract MyToken {
+    // Event : history를 storage에 모두 저장하면 비용이 많이 듬 -> receipt에 내보냄
+    event Transfer(address indexed from, address indexed to, uint256 value); // String (Hash)-> Topic
+    event Approval(address indexed spender, uint256 amount);
     // Contract Fields
     string public name; // public으로 선언하면 자동으로 getter 함수 생성
     string public symbol;
@@ -26,6 +29,9 @@ contract MyToken {
     uint256 public totalSupply; // 총 발행량
     mapping(address => uint256) public balanceOf; // 누가 몇개 가지고 있는지 : mapping(key, value) 
     
+    // approve
+    mapping(address => mapping(address => uint256)) allowance;
+
     // 탈 중앙화, 데이터의 무결성
     // 데이터를 조회하는것은 어떤 노드(블록체인의 노드는 모두 동일 데이터 갖고 있음)에 조회해도 동일한 값을 리턴해줌 = Transaction을 만들 필요 없음
 
@@ -40,19 +46,40 @@ contract MyToken {
         decimals = _decimals;
          // msg.sender(배포자) 에게 토큰 발행
         _mint(_amount*10**uint256(decimals), msg.sender); // 1 MT
+        // transaction 시 from에 해당하는 주소 : msg.sender
     }
-    // transaction 시 from에 해당하는 주소 : msg.sender
+
+    // approve : amount 만큼 spender가 내 토큰을 쓸 수 있도록 허락
+    function approve(address spender, uint256 amount) external {
+        allowance[msg.sender][spender] = amount;
+        emit Approval(spender, amount);
+    }
+
+    // transferFrom : spender가 owner의 토큰을 to에게 amount 만큼 전송
+    function transferFrom(address from, address to, uint256 amount) external {
+        address spender = msg.sender;
+        require(allowance[from][spender] >= amount, "insufficient allowance");
+        allowance[from][spender] -= amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+        emit Transfer(from, to, amount);
+    }
 
     // mint : 토큰 발행 -> internal로 내부에서만 호출 가능
     function _mint(uint256 amount, address owner) internal {
        totalSupply += amount;
        balanceOf[owner] += amount; // 토큰 안주면 사라짐
+
+       emit Transfer(address(0), owner, amount);
     }
 
+    // transfer : 토큰 전송
     function transfer(uint256 amount, address to) external {
         require(balanceOf[msg.sender] >= amount, "insufficient balance");
         balanceOf[msg.sender] -= amount;
         balanceOf[to] += amount;
+
+        emit Transfer(msg.sender, to, amount);
     }
 
 
@@ -73,3 +100,15 @@ contract MyToken {
     // }
 
 }
+
+/*
+approve 
+- allow spender address to send my token : 다른 사람이 내 토큰을 보낼 수 있도록
+transferFrom
+- spender: owner -> target address : spender가 transfer (Spender가 owner의 토큰을 target에게 보냄)
+
+* token owner --> bank
+* token owner --> router contract --> bank contract
+* token owner --> router contract --> bank contract (multi contract)
+
+*/
