@@ -126,5 +126,48 @@ describe("My Token", () => {
           )
       ).to.be.revertedWith("insufficient allowance");
     });
+    it("should transfer 100 MT from signer0 to signer1", async () => {
+      const signer0 = signers[0];
+      const signer1 = signers[1];
+
+      console.log(
+        "signer0 balance: ",
+        await myTokenC.balanceOf(signer0.address)
+      );
+      console.log(
+        "signer1 balance: ",
+        await myTokenC.balanceOf(signer1.address)
+      );
+      await expect(
+        myTokenC.approve(signer1.address, parseUnits("100", decimals))
+      )
+        .to.emit(myTokenC, "Approval")
+        .withArgs(signer1.address, parseUnits("100", decimals));
+
+      await expect(
+        myTokenC
+          .connect(signer1)
+          .transferFrom(
+            signer0.address,
+            signer1.address,
+            parseUnits("100", decimals)
+          )
+      )
+        .to.emit(myTokenC, "Transfer")
+        .withArgs(
+          signer0.address,
+          signer1.address,
+          parseUnits("100", decimals)
+        );
+
+      console.log(
+        "After transfer 100 MT, signer0 balance: ",
+        await myTokenC.balanceOf(signer0.address)
+      );
+      console.log(
+        "After transfer 100 MT, signer1 balance: ",
+        await myTokenC.balanceOf(signer1.address)
+      );
+    });
   });
 });
