@@ -26,13 +26,20 @@ contract MyToken {
     uint256 public totalSupply; // 총 발행량
     mapping(address => uint256) public balanceOf; // 누가 몇개 가지고 있는지 : mapping(key, value) 
     
+    // 탈 중앙화, 데이터의 무결성
+    // 데이터를 조회하는것은 어떤 노드(블록체인의 노드는 모두 동일 데이터 갖고 있음)에 조회해도 동일한 값을 리턴해줌 = Transaction을 만들 필요 없음
+
+    // 배포 = Transaction) -> gas(transaction 수수료) 비용 발생
+    // transfer 호출 =  transaction -> gas(transaction 수수료) 비용 발생
+    // 단순 view 함수 호출 = Just API Call -> gas(transaction 수수료) 비용 없음
+
     // 생성자
-    constructor(string memory _name, string memory _symbol, uint8 _decimals) {
+    constructor(string memory _name, string memory _symbol, uint8 _decimals, uint256 _amount) {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
          // msg.sender(배포자) 에게 토큰 발행
-        _mint(1*10**uint256(decimals), msg.sender); // 1 MT
+        _mint(_amount*10**uint256(decimals), msg.sender); // 1 MT
     }
     // transaction 시 from에 해당하는 주소 : msg.sender
 
@@ -42,7 +49,15 @@ contract MyToken {
        balanceOf[owner] += amount; // 토큰 안주면 사라짐
     }
 
+    function transfer(uint256 amount, address to) external {
+        require(balanceOf[msg.sender] >= amount, "insufficient balance");
+        balanceOf[msg.sender] -= amount;
+        balanceOf[to] += amount;
+    }
 
+
+
+    // Getter 함수
     // external : 외부에서 호출 가능
     // view : 읽기 전용 함수 (상태 변경 X)
     // function totalSupply() external view returns (uint256) {
