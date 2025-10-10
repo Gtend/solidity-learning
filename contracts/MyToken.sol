@@ -31,7 +31,17 @@ contract MyToken {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
+         // msg.sender(배포자) 에게 토큰 발행
+        _mint(1*10**uint256(decimals), msg.sender); // 1 MT
     }
+    // transaction 시 from에 해당하는 주소 : msg.sender
+
+    // mint : 토큰 발행 -> internal로 내부에서만 호출 가능
+    function _mint(uint256 amount, address owner) internal {
+       totalSupply += amount;
+       balanceOf[owner] += amount; // 토큰 안주면 사라짐
+    }
+
 
     // external : 외부에서 호출 가능
     // view : 읽기 전용 함수 (상태 변경 X)
