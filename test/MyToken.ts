@@ -5,9 +5,7 @@ import { expect } from "chai";
 import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { parseUnits } from "ethers";
-
-const MINTING_AMOUNT = 100n;
-const DECIMALS = 18n;
+import { DECIMALS, MINTING_AMOUNT } from "./constant";
 
 describe("My Token", () => {
   let myTokenC: MyToken;
@@ -130,14 +128,14 @@ describe("My Token", () => {
       const signer0 = signers[0];
       const signer1 = signers[1];
 
-      console.log(
-        "signer0 balance: ",
-        await myTokenC.balanceOf(signer0.address)
-      );
-      console.log(
-        "signer1 balance: ",
-        await myTokenC.balanceOf(signer1.address)
-      );
+      // console.log(
+      //   "signer0 balance: ",
+      //   await myTokenC.balanceOf(signer0.address)
+      // );
+      // console.log(
+      //   "signer1 balance: ",
+      //   await myTokenC.balanceOf(signer1.address)
+      // );
       await expect(
         myTokenC.approve(signer1.address, parseUnits("100", DECIMALS))
       )
@@ -160,14 +158,14 @@ describe("My Token", () => {
           parseUnits("100", DECIMALS)
         );
 
-      console.log(
-        "After transfer 100 MT, signer0 balance: ",
-        await myTokenC.balanceOf(signer0.address)
-      );
-      console.log(
-        "After transfer 100 MT, signer1 balance: ",
-        await myTokenC.balanceOf(signer1.address)
-      );
+      // console.log(
+      //   "After transfer 100 MT, signer0 balance: ",
+      //   await myTokenC.balanceOf(signer0.address)
+      // );
+      // console.log(
+      //   "After transfer 100 MT, signer1 balance: ",
+      //   await myTokenC.balanceOf(signer1.address)
+      // );
     });
   });
 });
