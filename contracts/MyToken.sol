@@ -6,7 +6,7 @@
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
-
+import "./ManagedAccess.sol";
 // Compile : npx hardhat compile
 // 컴파일 시
 // -> artifacts/contracts/MyToken.json 
@@ -17,11 +17,12 @@ pragma solidity ^0.8.28;
 
 
 // CLASS = CONTRACT
-contract MyToken {
+contract MyToken is ManagedAccess {
     // Event : history를 storage에 모두 저장하면 비용이 많이 듬 -> receipt에 내보냄
     event Transfer(address indexed from, address indexed to, uint256 value); // String (Hash)-> Topic
     event Approval(address indexed spender, uint256 amount);
     // Contract Fields
+
     string public name; // public으로 선언하면 자동으로 getter 함수 생성
     string public symbol;
     uint8 public decimals; // 1 wei -> 1*10^-18
@@ -40,7 +41,7 @@ contract MyToken {
     // 단순 view 함수 호출 = Just API Call -> gas(transaction 수수료) 비용 없음
 
     // 생성자
-    constructor(string memory _name, string memory _symbol, uint8 _decimals, uint256 _amount) {
+    constructor(string memory _name, string memory _symbol, uint8 _decimals, uint256 _amount) ManagedAccess(msg.sender, msg.sender) {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
@@ -65,16 +66,20 @@ contract MyToken {
         emit Transfer(from, to, amount);
     }
 
-    // mint : 토큰 발행 -> internal로 내부에서만 호출 가능
-    function _mint(uint256 amount, address owner) internal {
-       totalSupply += amount;
-       balanceOf[owner] += amount; // 토큰 안주면 사라짐
-
-       emit Transfer(address(0), owner, amount);
+    function mint(uint256 amount, address to) external onlyManager{
+       _mint(amount, to);
     }
 
-    function mint(uint256 amount, address owner) external {
-       _mint(amount, owner);
+    function setManager(address _manager) external onlyOwner {
+        manager = _manager;
+    }
+
+    // mint : 토큰 발행 -> internal로 내부에서만 호출 가능
+    function _mint(uint256 amount, address to) internal {
+       totalSupply += amount;
+       balanceOf[to] += amount;
+
+       emit Transfer(address(0), to, amount);
     }
 
     // transfer : 토큰 전송
