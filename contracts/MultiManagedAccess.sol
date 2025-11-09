@@ -17,12 +17,12 @@ abstract contract MultiManagedAccess {
     address[MANAGER_NUMBERS] public managers;
     bool[MANAGER_NUMBERS] public confirmed;
 
-    // constructor(address _owner, address[5] memory _managers) {
-    //     owner = _owner;
-    //     for(uint i=0; i<MANAGER_NUMBERS; i++) {
-    //         managers[i] = _managers[i];
-    //     }
-    // }
+    constructor(address _owner, address[5] memory _managers) {
+        owner = _owner;
+        for(uint i=0; i<MANAGER_NUMBERS; i++) {
+            managers[i] = _managers[i];
+        }
+    }
 
     // Immutable 시 생성자
     // constructor(address _owner, address[] memory _managers, uint _manager_numbers) {
@@ -55,7 +55,16 @@ abstract contract MultiManagedAccess {
     }
 
     modifier onlyAllConfirmed() {
-        require(allConfirmed(), "Not all managers confirmed yet");
+        // 매니저인지 확인 (매니저가 이미 다 컨펌했놓고 hacker가 호출 방지)
+        bool isManager = false;
+        for (uint i = 0; i < MANAGER_NUMBERS; i++) {
+            if (managers[i] == msg.sender) {
+                isManager = true;
+                break;
+            }
+        }
+        require(isManager, "You are not a manager");
+        require(allConfirmed(), "Not all confirmed yet");
         reset();
         _;
     }
@@ -69,7 +78,7 @@ abstract contract MultiManagedAccess {
                 break;
             }
         }
-        require(found, "You are not one of managers");
+        require(found, "You are not a manager");
     }
 
 }
