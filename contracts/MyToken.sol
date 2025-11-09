@@ -30,7 +30,7 @@ contract MyToken {
     mapping(address => uint256) public balanceOf; // 누가 몇개 가지고 있는지 : mapping(key, value) 
     
     // approve
-    mapping(address => mapping(address => uint256)) allowance;
+    mapping(address => mapping(address => uint256)) public allowance;
 
     // 탈 중앙화, 데이터의 무결성
     // 데이터를 조회하는것은 어떤 노드(블록체인의 노드는 모두 동일 데이터 갖고 있음)에 조회해도 동일한 값을 리턴해줌 = Transaction을 만들 필요 없음
